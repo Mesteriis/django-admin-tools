@@ -271,10 +271,7 @@ class Group(DashboardModule):
         """
         if super(Group, self).is_empty():
             return True
-        for child in self.children:
-            if not child.is_empty():
-                return False
-        return True
+        return all(child.is_empty() for child in self.children)
 
     def _prepare_children(self):
         # computes ids for children: generates them if they are not set
@@ -456,8 +453,7 @@ class AppList(DashboardModule, AppListElementMixin):
                     'url': self._get_admin_app_list_url(model, context),
                     'models': []
                 }
-            model_dict = {}
-            model_dict['title'] = model._meta.verbose_name_plural
+            model_dict = {'title': model._meta.verbose_name_plural}
             if perms['change'] or perms.get('view', False):
                 model_dict['change_url'] = self._get_admin_change_url(
                     model,
@@ -529,10 +525,7 @@ class ModelList(DashboardModule, AppListElementMixin):
         self.exclude = list(exclude or [])
         self.include_list = kwargs.pop('include_list', [])  # deprecated
         self.exclude_list = kwargs.pop('exclude_list', [])  # deprecated
-        if 'extra' in kwargs:
-            self.extra = kwargs.pop('extra')
-        else:
-            self.extra = []
+        self.extra = kwargs.pop('extra') if 'extra' in kwargs else []
         super(ModelList, self).__init__(title, **kwargs)
 
     def init_with_context(self, context):
@@ -542,8 +535,7 @@ class ModelList(DashboardModule, AppListElementMixin):
         if not items:
             return
         for model, perms in items:
-            model_dict = {}
-            model_dict['title'] = model._meta.verbose_name_plural
+            model_dict = {'title': model._meta.verbose_name_plural}
             if perms['change'] or perms.get('view', False):
                 model_dict['change_url'] = self._get_admin_change_url(
                     model,
@@ -642,10 +634,7 @@ class RecentActions(DashboardModule):
                         content_type__app_label=app_label,
                         content_type__model=model
                     )
-                if qset is None:
-                    qset = current_qset
-                else:
-                    qset = qset | current_qset
+                qset = current_qset if qset is None else qset | current_qset
             return qset
 
         if request.user is None:

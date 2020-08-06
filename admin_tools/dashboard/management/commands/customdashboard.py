@@ -15,8 +15,7 @@ class Command(BaseCommand):
         parser.add_argument("output_file", type=str)
 
     def handle(self, output_file=None, **options):
-        context = {}
-        context["project"] = os.path.basename(os.getcwd())
+        context = {"project": os.path.basename(os.getcwd())}
         tpl = [
             "dashboard/dashboard.txt",
             "admin_tools/dashboard/dashboard.txt",
